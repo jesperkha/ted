@@ -21,7 +21,7 @@ typedef unsigned char byte;
 // explcitly by its owner.
 typedef struct String {
    const char *s;
-   unsigned int length;
+   usize length;
    bool err;
 } String;
 
