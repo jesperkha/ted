@@ -31,13 +31,8 @@ Input term_get_input(void);
 // Set the terminal cursor position.
 void term_set_cursor_pos(usize row, usize col);
 
-typedef struct TermSize {
-   usize rows;
-   usize cols;
-} TermSize;
-
 // Get the terminal buffer size in rows and columns. Returns zero size on failure.
-TermSize term_get_size(void);
+Size term_get_size(void);
 
 // Write [buf] to the terminal at the cursor position.
 void term_write(String buf);

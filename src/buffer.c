@@ -1,8 +1,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include "buffer.h"
 #include "util.h"
+#include "view.h"
 
 #define LINEBUF_DEFAULT_SIZE 128
 #define DEFAULT_LINE_LENGTH 32
@@ -18,6 +20,8 @@ typedef struct LineBuffer {
 struct Buffer {
     String filepath;
     LineBuffer lines;
+    Cursor cursor;
+    usize line_offset;
     bool dirty;
 };
 
@@ -50,7 +54,9 @@ static LineBuffer new_line_buffer(String source) {
             usize length = max(i - line_start - 1, 0); // -1 for newline
 
             Line line = (Line){
-                .text = STRING(ptr, length),
+                .text = (byte *)ptr,
+                .length = length,
+                .cap = length,
                 .written = false,
                 .err = false,
             };
@@ -64,7 +70,9 @@ static LineBuffer new_line_buffer(String source) {
     if (count == 0) {
         count = 1;
         lines[0] = (Line){
-            .text = STRING(malloc(DEFAULT_LINE_LENGTH), 0),
+            .text = malloc(DEFAULT_LINE_LENGTH),
+            .length = 0,
+            .cap = DEFAULT_LINE_LENGTH,
             .err = false,
             .written = true,
         };
@@ -85,9 +93,40 @@ Buffer *buffer_create(void) {
     b->lines = new_line_buffer(ERROR_STRING);
     b->filepath = ERROR_STRING;
     b->dirty = false;
+    b->line_offset = 0;
+    b->cursor = (Cursor){.col = 0, .row = 0};
     return b;
 }
 
 void buffer_destroy(Buffer *b) {
     free(b);
+}
+
+int buffer_render(Buffer *b, View *view) {
+    Size size = view_size(view);
+    usize line_count = min(size.height, b->lines.count);
+
+    usize sum_bytes = 0;
+
+    for (usize i = 0; i < line_count; i++) {
+        usize buffer_line_number = i + b->line_offset;
+        Line line = b->lines.lines[buffer_line_number];
+        sum_bytes += view_write_line(view, STRING(line.text, line.length), i);
+    }
+
+    return sum_bytes;
+}
+
+void buffer_write(Buffer *b, String text) {
+    Line line = b->lines.lines[b->cursor.row];
+    if (!line.written) {
+        TODO("fresh line alloc not implemented");
+    }
+
+    if (text.length + b->cursor.col > line.cap) {
+        TODO("line realloc not implemented");
+    }
+
+    memcpy(line.text + b->cursor.col, text.s, text.length);
+    line.length += text.length;
 }

@@ -51,3 +51,7 @@ usize view_write_line(View *v, String content, usize line) {
 String view_to_string(View *v) {
     return STRING((char *)v->buffer, v->width * v->height);
 }
+
+Size view_size(View *v) {
+    return SIZE(v->width, v->height);
+}

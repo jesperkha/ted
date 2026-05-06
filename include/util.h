@@ -26,6 +26,13 @@ typedef struct String {
 } String;
 
 #define ERROR_STRING ((String){.s = NULL, .length = 0, .err = true})
-#define STRING(ptr, len) ((String){.s = ptr, .length = len, .err = false})
+#define STRING(ptr, len) ((String){.s = (char *)ptr, .length = len, .err = false})
 
 #define string_println(strbuf) { printf("%.*s", strbuf.length, strbuf.s); }
+
+typedef struct Size {
+    usize width;
+    usize height;
+} Size;
+
+#define SIZE(w, h) ((Size){.width = w, .height = h})

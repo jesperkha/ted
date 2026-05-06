@@ -77,16 +77,16 @@ void term_set_cursor_pos(usize row, usize col) {
     write(STDOUT_FILENO, buf, len);
 }
 
-TermSize term_get_size(void) {
+Size term_get_size(void) {
     struct winsize ws;
-    TermSize size = {0, 0};
+    Size size = {0, 0};
 
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1) {
         return size;
     }
 
-    size.rows = ws.ws_row;
-    size.cols = ws.ws_col;
+    size.width = ws.ws_col;
+    size.height = ws.ws_row;
     return size;
 }
 

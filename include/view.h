@@ -16,3 +16,6 @@ usize view_write_line(View *v, String content, usize line);
 
 // Get [v] as a string. Only really makes sense for a root View.
 String view_to_string(View *v);
+
+// Get the size of [v].
+Size view_size(View *v);

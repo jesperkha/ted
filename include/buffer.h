@@ -48,7 +48,9 @@ bool buffer_delete_line(Buffer *b, usize ln);
 
 typedef struct Line {
     // Text content of this line.
-    String text;
+    byte *text;
+    usize length, cap;
+
     // If this line has been written to or points to the original file.
     // Text content should not be modified if this is false.
     bool written;
@@ -63,7 +65,7 @@ Line buffer_read_line(Buffer *b, usize ln);
 
 // Render buffer contents to [view]. Returns number of bytes written.
 // Returns -1 on error.
-int buffer_render(View *view);
+int buffer_render(Buffer *b, View *view);
 
 /*
  *  CURSOR
