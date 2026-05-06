@@ -2,6 +2,7 @@
 
 #include "strbuf.h"
 #include <stdbool.h>
+#include "util.h"
 
 typedef enum ControlKey {
    CONTROL_NONE,
@@ -29,16 +30,28 @@ void term_set_raw_mode(bool enable);
 Input term_get_input(void);
 
 // Set the terminal cursor position.
-void term_set_cursor_pos(unsigned int row, unsigned int col);
+void term_set_cursor_pos(usize row, usize col);
 
 typedef struct TermSize
 {
-   unsigned int rows;
-   unsigned int cols;
+   usize rows;
+   usize cols;
 } TermSize;
 
-// Get the terminal buffer size in rows and columns.
+// Get the terminal buffer size in rows and columns. Returns zero size on failure.
 TermSize term_get_size(void);
 
 // Write [buf] to the terminal at the cursor position.
-void term_write(StrBuf buf);
+void term_write(String buf);
+
+// Clears terminal buffer.
+void term_clear(void);
+
+// Toggle cursor visibility.
+void term_set_cursor_visible(bool visible);
+
+// Create new alternate buffer to draw to and restore to later.
+void term_new_buffer(void);
+
+// Restore to previous buffer.
+void term_restore_buffer(void);

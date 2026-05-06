@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "strbuf.h"
+#include "util.h"
 
 /*
  *  BUFFER
@@ -21,10 +22,10 @@ Buffer *buffer_create(void);
 void buffer_destroy(Buffer *b);
 
 // Write [text] at cursor position, moving all text after the cursor to the right.
-void buffer_write(Buffer *b, StrBuf text);
+void buffer_write(Buffer *b, String text);
 
 // Write [text] at cursor position, overwriting any text to the right.
-void buffer_overwrite(Buffer *b, StrBuf text);
+void buffer_overwrite(Buffer *b, String text);
 
 typedef enum DeleteDirection {
     DELETE_LEFT,
@@ -33,7 +34,7 @@ typedef enum DeleteDirection {
 
 // Delete [count] characters to the left/right of the cursor.
 // [dir] can be DELETE_LEFT or DELETE_RIGHT.
-void buffer_delete(Buffer *b, unsigned int count, DeleteDirection dir);
+void buffer_delete(Buffer *b, usize count, DeleteDirection dir);
 
 // Insert a new line after the line number [after]. Returns the new line number.
 // After may be -1 to append the line after the last line in the buffer.
@@ -43,11 +44,11 @@ int buffer_insert_line(Buffer *b, int after);
 // Delete line number [ln], moving all trailing lines up one. Returns false if
 // [ln] is out of bounds or the last line in the buffer, in which case it cannot
 // be deleted. Returns true on success.
-bool buffer_delete_line(Buffer *b, unsigned int ln);
+bool buffer_delete_line(Buffer *b, usize ln);
 
-// Read the text content of line number [ln]. Returns ERROR_STRBUF is [ln] is
+// Read the text content of line number [ln]. Returns ERROR_STRING if [ln] is
 // out of bounds.
-StrBuf buffer_read_line(Buffer *b, unsigned int ln);
+String buffer_read_line(Buffer *b, usize ln);
 
 /*
  *  CURSOR
@@ -57,13 +58,13 @@ StrBuf buffer_read_line(Buffer *b, unsigned int ln);
  */
 
 typedef struct Cursor {
-    unsigned int row;
-    unsigned int col;
+    usize row;
+    usize col;
 } Cursor;
 
 // Set cursor position at given row/col. Returns false if out of bounds,
 // otherwise true.
-bool cursor_set_pos(Buffer *b, unsigned int row, unsigned int col);
+bool cursor_set_pos(Buffer *b, usize row, usize col);
 
 // Move the cursor [x] and [y] characters in the horizontal and vertical
 // direction respectively. Returns false if resulting position is out of

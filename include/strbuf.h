@@ -7,12 +7,13 @@
 // The buffer may be a whole string, or just a view into a longer one.
 // For this reason, StrBuf should always be passed by value and only freed
 // explcitly by its owner.
-typedef struct StrBuf {
+typedef struct String {
    const char *s;
    unsigned int length;
    bool err;
-} StrBuf;
+} String;
 
-#define ERROR_STRBUF ((StrBuf){.s = NULL, .length = 0, .err = true})
+#define ERROR_STRING ((String){.s = NULL, .length = 0, .err = true})
+#define STRING(ptr, len) ((String){.s = ptr, .length = len, .err = false})
 
-#define strbuf_println(strbuf) { printf("%.*s", strbuf.length, strbuf.s); }
+#define string_println(strbuf) { printf("%.*s", strbuf.length, strbuf.s); }
