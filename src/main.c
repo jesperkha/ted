@@ -1,5 +1,4 @@
 #include <string.h>
-#include "strbuf.h"
 #include "term.h"
 #include "util.h"
 

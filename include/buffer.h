@@ -2,8 +2,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "strbuf.h"
 #include "util.h"
+#include "view.h"
 
 /*
  *  BUFFER
@@ -46,9 +46,24 @@ int buffer_insert_line(Buffer *b, int after);
 // be deleted. Returns true on success.
 bool buffer_delete_line(Buffer *b, usize ln);
 
-// Read the text content of line number [ln]. Returns ERROR_STRING if [ln] is
-// out of bounds.
-String buffer_read_line(Buffer *b, usize ln);
+typedef struct Line {
+    // Text content of this line.
+    String text;
+    // If this line has been written to or points to the original file.
+    // Text content should not be modified if this is false.
+    bool written;
+    // Invalid Line value.
+    bool err;
+} Line;
+
+#define ERROR_LINE ((Line){.err = true})
+
+// Read the line number [ln]. Returns ERROR_LINE if [ln] is out of bounds.
+Line buffer_read_line(Buffer *b, usize ln);
+
+// Render buffer contents to [view]. Returns number of bytes written.
+// Returns -1 on error.
+int buffer_render(View *view);
 
 /*
  *  CURSOR

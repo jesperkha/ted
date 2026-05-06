@@ -1,6 +1,5 @@
 #pragma once
 
-#include "strbuf.h"
 #include <stdbool.h>
 #include "util.h"
 
@@ -32,8 +31,7 @@ Input term_get_input(void);
 // Set the terminal cursor position.
 void term_set_cursor_pos(usize row, usize col);
 
-typedef struct TermSize
-{
+typedef struct TermSize {
    usize rows;
    usize cols;
 } TermSize;
