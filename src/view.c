@@ -5,17 +5,25 @@
 struct View {
     // Parent view if any.
     View *parent;
-    // Buffer points to the first byte in this view.
-    byte *buffer;
+    // Buffer points to the first cell in the view.
+    Cell *buffer;
     usize width, height;
-    // Number of bytes from line start to next line start.
+    // Number of cells from line start to next line start.
     usize line_wrap_amount;
 };
 
-View *view_create(byte *buffer, usize width, usize height) {
+View *view_create(usize width, usize height) {
     View *v = malloc(sizeof(View));
     v->parent = NULL;
-    v->buffer = buffer;
+    v->buffer = malloc(sizeof(Cell) * width * height);
+    if (v->buffer == NULL)
+        PANIC("failed to allocate view buffer");
+
+    // Initialize clear buffer
+    for (usize i = 0; i < width * height; i++) {
+        v->buffer[i].c = ' ';
+    }
+
     v->width = width;
     v->height = height;
     v->line_wrap_amount = width;
@@ -35,23 +43,23 @@ View *view_from(View *parent, usize x, usize y, usize w, usize h) {
     return v;
 }
 
-usize view_write_line(View *v, String content, usize line) {
-    if (content.err || v->buffer == NULL)
+usize view_write_line(View *v, Cell *cells, usize count, usize line) {
+    if (cells == NULL || v->buffer == NULL || count == 0)
         return 0;
 
     if (line >= v->height)
         return 0;
 
-    usize write_count = min(v->width, content.length);
-    byte *offset = v->buffer + (line * v->line_wrap_amount);
-    memcpy(offset, content.s, write_count);
+    usize write_count = min(v->width, count);
+    Cell *offset = v->buffer + (line * v->line_wrap_amount);
+    memcpy(offset, cells, write_count * sizeof(Cell));
     return write_count;
-}
-
-String view_to_string(View *v) {
-    return STRING((char *)v->buffer, v->width * v->height);
 }
 
 Size view_size(View *v) {
     return SIZE(v->width, v->height);
+}
+
+RenderView view_get_render_view(View *v) {
+    return (RenderView){.cells = v->buffer, .size = v->width * v->height};
 }

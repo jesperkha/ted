@@ -10,6 +10,8 @@
 #define LINEBUF_DEFAULT_SIZE 128
 #define DEFAULT_LINE_LENGTH 32
 
+Cell draw_buffer[4096];
+
 typedef struct LineBuffer {
     // Source text if any. May be ERROR_STRING for empty buffer.
     String source;
@@ -125,7 +127,15 @@ int buffer_render(Buffer *b, View *view) {
     for (usize i = 0; i < line_count; i++) {
         usize buffer_line_number = i + b->line_offset;
         Line line = b->lines.lines[buffer_line_number];
-        sum_bytes += view_write_line(view, STRING(line.text, line.length), i);
+
+        usize count = min(line.length, size.width);
+        Cell *cells = draw_buffer;
+
+        for (usize i = 0; i < count; i++) {
+            cells[i] = (Cell){.c = line.text[i]};
+        }
+
+        sum_bytes += view_write_line(view, cells, count, i);
     }
 
     return sum_bytes;

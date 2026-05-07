@@ -4,6 +4,15 @@
 #include "util.h"
 #include "view.h"
 
+void draw_view(View *v, byte *buffer) {
+    RenderView rv = view_get_render_view(v);
+    for (usize i = 0; i < rv.size; i++) {
+        buffer[i] = rv.cells[i].c;
+    }
+
+    term_write(STRING(buffer, rv.size));
+}
+
 int main(void) {
     Size size = term_get_size();
     if (size.width == 0)
@@ -15,8 +24,7 @@ int main(void) {
     byte buffer[MAX_BUFFER];
     memset(buffer, ' ', MAX_BUFFER);
 
-    View *view = view_create(buffer, size.width, size.height);
-    View *child = view_from(view, 10, 10, 10, 10);
+    View *view = view_create(size.width, size.height);
     Buffer *b = buffer_create();
 
     while (true) {
@@ -36,8 +44,8 @@ int main(void) {
             cursor_move(b, 0, 1);
         }
 
-        buffer_render(b, child);
-        term_write(view_to_string(view));
+        buffer_render(b, view);
+        draw_view(view, buffer);
         term_set_cursor_pos(0, 0);
     }
 
