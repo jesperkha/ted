@@ -5,13 +5,6 @@
 #include "util.h"
 #include "view.h"
 
-/*
- *  BUFFER
- *
- *  Types and procedures related to buffers. A Buffer is a structure
- *  containing data related to a text buffer in the editor.
- */
-
 // Buffer represents a text buffer in the editor.
 typedef struct Buffer Buffer;
 
@@ -67,13 +60,8 @@ Line buffer_read_line(Buffer *b, usize ln);
 // Returns -1 on error.
 int buffer_render(Buffer *b, View *view);
 
-/*
- *  CURSOR
- *
- *  Types and procedures related to the cursor. Buffers contain a cursor,
- *  which holds positional information on where to write data.
- */
-
+// Cursor is a row/col position in a Buffer. It is guaranteed to be within the
+// bounds of the buffer and current line.
 typedef struct Cursor {
     usize row;
     usize col;

@@ -3,6 +3,8 @@
 #include "util.h"
 #include <stdint.h>
 
+// A Cell is a single character drawn to the screen. It contains the character
+// itself, styling information, and additional flags.
 typedef struct Cell {
     uint32_t fg, bg;
     uint16_t flags;
