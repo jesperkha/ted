@@ -36,3 +36,6 @@ typedef struct Size {
 } Size;
 
 #define SIZE(w, h) ((Size){.width = w, .height = h})
+
+// Read entire file into a string buffer.
+String read_entire_file(const char *filepath);

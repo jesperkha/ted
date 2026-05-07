@@ -17,11 +17,12 @@ int main(void)
     memset(buffer, ' ', MAX_BUFFER);
 
     View *view = view_create(buffer, size.width, size.height);
-    Buffer *b = buffer_create();
+    View *child = view_from(view, 10, 10, 10, 10);
 
+    Buffer *b = buffer_create();
     buffer_write(b, STRING("Hello", 5));
 
-    buffer_render(b, view);
+    buffer_render(b, child);
     term_write(view_to_string(view));
     term_set_cursor_pos(0, 0);
 

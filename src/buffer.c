@@ -118,15 +118,15 @@ int buffer_render(Buffer *b, View *view) {
 }
 
 void buffer_write(Buffer *b, String text) {
-    Line line = b->lines.lines[b->cursor.row];
-    if (!line.written) {
+    Line *line = &b->lines.lines[b->cursor.row];
+    if (!line->written) {
         TODO("fresh line alloc not implemented");
     }
 
-    if (text.length + b->cursor.col > line.cap) {
+    if (text.length + b->cursor.col > line->cap) {
         TODO("line realloc not implemented");
     }
 
-    memcpy(line.text + b->cursor.col, text.s, text.length);
-    line.length += text.length;
+    memcpy(line->text + b->cursor.col, text.s, text.length);
+    line->length += text.length;
 }
