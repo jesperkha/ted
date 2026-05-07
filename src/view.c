@@ -19,6 +19,8 @@ View *view_create(usize width, usize height) {
     if (v->buffer == NULL)
         PANIC("failed to allocate view buffer");
 
+    // TODO: view destroy
+
     // Initialize clear buffer
     for (usize i = 0; i < width * height; i++) {
         v->buffer[i].c = ' ';

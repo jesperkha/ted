@@ -4,6 +4,7 @@
 #include "util.h"
 #include "view.h"
 
+// TODO: move to new editor module
 void draw_view(View *v, byte *buffer) {
     RenderView rv = view_get_render_view(v);
     for (usize i = 0; i < rv.size; i++) {
@@ -22,9 +23,9 @@ int main(void) {
 
     #define MAX_BUFFER (1024 * 100)
     byte buffer[MAX_BUFFER];
-    memset(buffer, ' ', MAX_BUFFER);
 
     View *view = view_create(size.width, size.height);
+    View *child = view_from(view, 10, 10, 10, 10);
     Buffer *b = buffer_create();
 
     while (true) {
@@ -44,7 +45,7 @@ int main(void) {
             cursor_move(b, 0, 1);
         }
 
-        buffer_render(b, view);
+        buffer_render(b, child);
         draw_view(view, buffer);
         term_set_cursor_pos(0, 0);
     }

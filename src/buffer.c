@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "buffer.h"
@@ -10,7 +9,8 @@
 #define LINEBUF_DEFAULT_SIZE 128
 #define DEFAULT_LINE_LENGTH 32
 
-Cell draw_buffer[4096];
+// Global buffer used to draw a single line to before rendering to a view.
+Cell line_draw_buffer[512];
 
 typedef struct LineBuffer {
     // Source text if any. May be ERROR_STRING for empty buffer.
@@ -122,23 +122,23 @@ int buffer_render(Buffer *b, View *view) {
     Size size = view_size(view);
     usize line_count = min(size.height, b->lines.count);
 
-    usize sum_bytes = 0;
+    usize sum_cells = 0;
 
     for (usize i = 0; i < line_count; i++) {
         usize buffer_line_number = i + b->line_offset;
         Line line = b->lines.lines[buffer_line_number];
 
         usize count = min(line.length, size.width);
-        Cell *cells = draw_buffer;
+        Cell *cells = line_draw_buffer;
 
         for (usize i = 0; i < count; i++) {
             cells[i] = (Cell){.c = line.text[i]};
         }
 
-        sum_bytes += view_write_line(view, cells, count, i);
+        sum_cells += view_write_line(view, cells, count, i);
     }
 
-    return sum_bytes;
+    return sum_cells;
 }
 
 void buffer_write(Buffer *b, String text) {

@@ -22,7 +22,7 @@ typedef struct Input {
    char character;
 } Input;
 
-// Set terminal raw mode according to [enable].
+// Set terminal raw mode according to enable.
 void term_set_raw_mode(bool enable);
 
 // Get terminal input in raw mode.
@@ -34,7 +34,7 @@ void term_set_cursor_pos(usize row, usize col);
 // Get the terminal buffer size in rows and columns. Returns zero size on failure.
 Size term_get_size(void);
 
-// Write [buf] to the terminal at the cursor position.
+// Write buf to the terminal at the cursor position.
 void term_write(String buf);
 
 // Clears terminal buffer.
