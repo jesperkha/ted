@@ -138,6 +138,7 @@ static void term_signal_handler(int sig) {
 
 void term_new_buffer(void) {
     term_enter_alt_buffer();
+    term_set_raw_mode(true);
 
     term_set_cursor_visible(false);
 

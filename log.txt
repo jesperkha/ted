@@ -1,0 +1,15 @@
+(src/buffer.c:137) TODO: fresh line alloc not implemented
+(src/buffer.c:137) TODO: fresh line alloc not implemented
+(src/buffer.c:166) LOG: inserting line at 0
+(src/buffer.c:137) TODO: fresh line alloc not implemented
+(src/buffer.c:102) LOG: started with lines 1
+(src/buffer.c:168) LOG: inserting line at 0
+(src/buffer.c:139) TODO: fresh line alloc not implemented
+(src/buffer.c:166) LOG: inserting line at 1
+(src/buffer.c:166) LOG: inserting line at 2
+(src/buffer.c:166) LOG: inserting line at 1
+(src/buffer.c:166) LOG: inserting line at 1
+(src/buffer.c:166) LOG: inserting line at 1
+(src/buffer.c:166) LOG: inserting line at 1
+(src/buffer.c:166) LOG: inserting line at 1
+(src/buffer.c:166) LOG: inserting line at 2

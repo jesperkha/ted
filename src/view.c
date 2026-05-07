@@ -39,7 +39,7 @@ usize view_write_line(View *v, String content, usize line) {
     if (content.err || v->buffer == NULL)
         return 0;
 
-    if (line > v->height)
+    if (line >= v->height)
         return 0;
 
     usize write_count = min(v->width, content.length);

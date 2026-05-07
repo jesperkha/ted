@@ -7,10 +7,27 @@
 typedef unsigned int usize;
 typedef unsigned char byte;
 
-#define __print_exit(prefix, msg) { printf("(%s:%d) "prefix": %s\n", __FILE__, __LINE__, msg); exit(1); }
+#define __print_file(prefix, msg) {                                  \
+    FILE *f = fopen("log.txt", "a");                                 \
+    if (f != NULL) {                                                 \
+        fprintf(f, "(%s:%d) "prefix": "msg"\n", __FILE__, __LINE__); \
+        fclose(f);                                                   \
+    }}
+
+#define __print_filef(prefix, msg, ...) {                                         \
+    FILE *f = fopen("log.txt", "a");                                              \
+    if (f != NULL) {                                                              \
+        fprintf(f, "(%s:%d) "prefix": "msg"\n", __FILE__, __LINE__, __VA_ARGS__); \
+        fclose(f);                                                                \
+    }}
+
+#define __print_exit(prefix, msg) { __print_file(prefix, msg); exit(1); }
 
 #define TODO(msg) __print_exit("TODO", msg)
 #define PANIC(msg) __print_exit("PANIC", msg)
+
+#define LOG(msg) __print_file("LOG", msg)
+#define LOGF(msg, ...) __print_filef("LOG", msg, __VA_ARGS__)
 
 #define max(a, b) (a > b ? a : b)
 #define min(a, b) (a < b ? a : b)

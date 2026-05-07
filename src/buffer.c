@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "buffer.h"
@@ -24,6 +25,26 @@ struct Buffer {
     usize line_offset;
     bool dirty;
 };
+
+// Create new Line with content if not ERROR_STRING.
+static Line new_line(String content) {
+    if (content.err) {
+        byte *ptr = malloc(DEFAULT_LINE_LENGTH);
+        if (ptr == NULL)
+            PANIC("failed to allocate line");
+
+        return (Line){
+            .text = ptr,
+            .length = 0,
+            .cap = DEFAULT_LINE_LENGTH,
+            .err = false,
+            .written = true,
+        };
+    }
+
+    TODO("content line not implemented");
+    return (Line){0};
+}
 
 static LineBuffer new_line_buffer(String source) {
     Line *lines = malloc(LINEBUF_DEFAULT_SIZE * sizeof(Line));
@@ -68,14 +89,7 @@ static LineBuffer new_line_buffer(String source) {
 
     // On empty file/buffer, create at least one line.
     if (count == 0) {
-        count = 1;
-        lines[0] = (Line){
-            .text = malloc(DEFAULT_LINE_LENGTH),
-            .length = 0,
-            .cap = DEFAULT_LINE_LENGTH,
-            .err = false,
-            .written = true,
-        };
+        lines[count++] = new_line(ERROR_STRING);
     }
 
     LineBuffer buf = {
@@ -123,10 +137,71 @@ void buffer_write(Buffer *b, String text) {
         TODO("fresh line alloc not implemented");
     }
 
-    if (text.length + b->cursor.col > line->cap) {
-        TODO("line realloc not implemented");
+    // Reallocate line if too big
+    if (line->length + text.length > line->cap) {
+        // TODO: reallocate larger size if text length exceeds new cap
+        line->cap *= 2;
+        byte *newptr = realloc(line->text, line->cap);
+        if (newptr == NULL)
+            PANIC("failed to reallocate line");
+
+        line->text = newptr;
+    }
+
+    // Move text to the right if cursor is in middle of line
+    if (b->cursor.col < line->length) {
+        byte *pos = line->text + b->cursor.col;
+        memmove(pos + text.length, pos, line->length - b->cursor.col);
     }
 
     memcpy(line->text + b->cursor.col, text.s, text.length);
     line->length += text.length;
+    b->cursor.col += text.length;
+}
+
+int buffer_insert_line(Buffer *b, int at) {
+    if (at < 0)
+        at = b->lines.count;
+
+    LOGF("inserting line at %d", at);
+
+    if (b->lines.count + 1 >= b->lines.cap) {
+        b->lines.cap *= 2;
+        b->lines.lines = realloc(b->lines.lines, b->lines.cap * sizeof(Line));
+        if (b->lines.lines == NULL)
+            PANIC("failed to reallocate lines");
+    }
+
+    if ((usize)at < b->lines.count) {
+    }
+
+    b->lines.lines[at] = new_line(ERROR_STRING);
+    b->lines.count++;
+    return (int)at;
+}
+
+Cursor cursor_get_pos(Buffer *b) {
+    return b->cursor;
+}
+
+bool cursor_move(Buffer *b, int dx, int dy) {
+    int x = (int)b->cursor.col + dx;
+    int y = (int)b->cursor.row + dy;
+
+    if (y < 0 || y >= (int)b->lines.count || x < 0)
+        return false;
+
+    if (dy == 0 && x > (int)b->lines.lines[y].length)
+        return false;
+
+    if (dy != 0) {
+        Line newline = b->lines.lines[y]; // asserted not out of bounds
+        if (x > (int)newline.length)
+            x = newline.length;
+    }
+
+    // Both asserted not <0
+    b->cursor.col = x;
+    b->cursor.row = y;
+    return true;
 }

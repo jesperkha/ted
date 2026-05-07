@@ -4,8 +4,7 @@
 #include "util.h"
 #include "view.h"
 
-int main(void)
-{
+int main(void) {
     Size size = term_get_size();
     if (size.width == 0)
         PANIC("failed to get terminal size");
@@ -18,18 +17,28 @@ int main(void)
 
     View *view = view_create(buffer, size.width, size.height);
     View *child = view_from(view, 10, 10, 10, 10);
-
     Buffer *b = buffer_create();
-    buffer_write(b, STRING("Hello", 5));
-
-    buffer_render(b, child);
-    term_write(view_to_string(view));
-    term_set_cursor_pos(0, 0);
 
     while (true) {
         Input input = term_get_input();
-        if (input.control == CONTROL_ENTER)
+        if (input.control == CONTROL_UP)
             break;
+
+        if (input.control == CONTROL_NONE)
+            buffer_write(b, STRING(&input.character, 1));
+
+        if (input.control == CONTROL_LEFT)
+            cursor_move(b, -1, 0);
+        if (input.control == CONTROL_RIGHT)
+            cursor_move(b, 1, 0);
+        if (input.control == CONTROL_ENTER) {
+            buffer_insert_line(b, (int)cursor_get_pos(b).row+1);
+            cursor_move(b, 0, 1);
+        }
+
+        buffer_render(b, child);
+        term_write(view_to_string(view));
+        term_set_cursor_pos(0, 0);
     }
 
     buffer_destroy(b);
