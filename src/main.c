@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include "color.h"
 #include "term.h"
 #include "util.h"
 #include "view.h"
@@ -14,6 +15,7 @@ int main(void) {
     byte buffer[MAX_BUFFER];
 
     View *view = view_create(size.width, size.height);
+    View *child = view_from(view, 5, 10, 80, 20);
     Buffer *b = buffer_create();
 
     while (true) {
@@ -24,8 +26,14 @@ int main(void) {
         if (input.control == CONTROL_NONE)
             buffer_write(b, STRING(&input.character, 1));
 
+        if (input.control == CONTROL_TAB)
+            view_resize(child, 1, 0, 0, 0);
         if (input.control == CONTROL_LEFT)
             cursor_move(b, -1, 0);
+        if (input.control == CONTROL_UP)
+            cursor_move(b, 0, -1);
+        if (input.control == CONTROL_DOWN)
+            cursor_move(b, 0, 1);
         if (input.control == CONTROL_RIGHT)
             cursor_move(b, 1, 0);
         if (input.control == CONTROL_ENTER) {
@@ -33,7 +41,9 @@ int main(void) {
             cursor_move(b, 0, 1);
         }
 
-        buffer_render(b, view);
+        view_clear(view, BG_BLACK);
+        buffer_render(b, child);
+
         usize count = view_render(view, buffer, MAX_BUFFER);
         term_write(STRING(buffer, count));
         term_set_cursor_pos(0, 0);

@@ -8,7 +8,7 @@ struct View {
     View *parent;
     // Buffer points to the first cell in the view.
     Cell *buffer;
-    usize width, height;
+    usize x, y, width, height;
     // Number of cells from line start to next line start.
     usize line_wrap_amount;
 };
@@ -24,32 +24,51 @@ View *view_create(usize width, usize height) {
 
     // Initialize clear buffer
     for (usize i = 0; i < width * height; i++) {
-        v->buffer[i].bg = BG_BLACK;
+        v->buffer[i].bg = BG_NONE;
         v->buffer[i].fg = FG_WHITE;
         v->buffer[i].c = ' ';
     }
 
+    v->x = v->y = 0;
     v->width = width;
     v->height = height;
     v->line_wrap_amount = width;
     return v;
 }
 
-View *view_from(View *parent, usize x, usize y, usize w, usize h) {
-    View *v = malloc(sizeof(View));
+static void init_view(View *parent, View *v, usize x, usize y, usize w, usize h) {
     v->parent = parent;
     v->line_wrap_amount = parent->line_wrap_amount;
 
     usize offset = (y * parent->line_wrap_amount) + x;
     v->buffer = parent->buffer + offset;
 
+    if (x > parent->width || y > parent->height)
+        PANIC("position of child view is outside parent");
+
+    // Clamp width and height to be contained in parent.
+    if (x + w > parent->width)
+        w = parent->width - x;
+    if (y + h > parent->height)
+        h = parent->height - y;
+
+    v->x = x;
+    v->y = y;
     v->width = w;
     v->height = h;
+}
+
+View *view_from(View *parent, usize x, usize y, usize w, usize h) {
+    if (parent == NULL)
+        return NULL;
+
+    View *v = malloc(sizeof(View));
+    init_view(parent, v, x, y, w, h);
     return v;
 }
 
 usize view_write_line(View *v, Cell *cells, usize count, usize line) {
-    if (cells == NULL || v->buffer == NULL || count == 0)
+    if (v == NULL || cells == NULL || v->buffer == NULL || count == 0)
         return 0;
 
     if (line >= v->height)
@@ -62,10 +81,15 @@ usize view_write_line(View *v, Cell *cells, usize count, usize line) {
 }
 
 Size view_size(View *v) {
+    if (v == NULL)
+        return SIZE(0, 0);
     return SIZE(v->width, v->height);
 }
 
 usize view_render(View *v, byte *buffer, usize max_size) {
+    if (v == NULL)
+        return 0;
+
     usize cell_size = 5 + 5 + 1; // Two colors and the character
 
     // Number of bytes and cells to write
@@ -92,4 +116,40 @@ usize view_render(View *v, byte *buffer, usize max_size) {
     }
 
     return byte_count;
+}
+
+bool view_resize(View *v, int dx, int dy, int dw, int dh) {
+    if (v == NULL || v->parent == NULL)
+        return false;
+
+    int x = v->x + dx;
+    int y = v->y + dy;
+    int w = v->width + dw;
+    int h = v->height + dh;
+
+    if (x < 0 || y < 0 || w < 0 || h < 0)
+        return false;
+
+    init_view(v->parent, v, x, y, w, h);
+    return true;
+}
+
+bool view_set_size(View *v, usize x, usize y, usize w, usize h) {
+    if (v == NULL || v->parent == NULL)
+        return false;
+
+    init_view(v->parent, v, x, y, w, h);
+    return true;
+}
+
+usize view_clear(View *v, uint16_t color) {
+    if (v == NULL)
+        return 0;
+
+    usize count = v->width * v->height;
+    for (usize i = 0; i < count; i++) {
+        v->buffer[i] = (Cell){.c = ' ', .fg = FG_NONE, .bg = color};
+    }
+
+    return count;
 }

@@ -125,18 +125,43 @@ int buffer_render(Buffer *b, View *view) {
 
     usize sum_cells = 0;
 
+    usize cursor_col = b->cursor.col;
+    usize cursor_row = b->cursor.row;
+
     for (usize i = 0; i < line_count; i++) {
         usize buffer_line_number = i + b->line_offset;
         Line line = b->lines.lines[buffer_line_number];
 
-        usize count = min(line.length, size.width);
+        usize line_length = min(line.length, size.width);
         Cell *cells = line_draw_buffer;
 
-        for (usize i = 0; i < count; i++) {
-            cells[i] = (Cell){.c = line.text[i], .fg = FG_WHITE, .bg = BG_BLACK};
+        // Draw all characters in the line
+        for (usize i = 0; i < line_length; i++) {
+            cells[i] = (Cell){.c = line.text[i], .fg = FG_WHITE, .bg = BG_BLUE};
         }
 
-        sum_cells += view_write_line(view, cells, count, i);
+        // Draw padding at the end of the line
+        for (usize i = line_length; i < size.width; i++) {
+            cells[i] = (Cell){.c = ' ', .fg = FG_WHITE, .bg = BG_BLUE};
+        }
+
+        // Show cursor position with inverted colors
+        if (cursor_row == i && cursor_col < size.width) {
+            cells[cursor_col].bg = BG_WHITE;
+            cells[cursor_col].fg = FG_BLUE;
+        }
+
+        sum_cells += view_write_line(view, cells, size.width, i);
+    }
+
+    for (usize i = line_count; i < size.height; i++) {
+        Cell *cells = line_draw_buffer;
+
+        for (usize i = 0; i < size.width; i++) {
+            cells[i] = (Cell){.c = ' ', .fg = FG_WHITE, .bg = BG_BLUE};
+        }
+
+        sum_cells += view_write_line(view, cells, size.width, i);
     }
 
     return sum_cells;
@@ -184,6 +209,7 @@ int buffer_insert_line(Buffer *b, int at) {
     }
 
     if ((usize)at < b->lines.count) {
+        // TODO: move lines when inserting
     }
 
     b->lines.lines[at] = new_line(ERROR_STRING);
