@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -38,6 +39,15 @@ Input term_get_input(void) {
     }
 
     if (c == '\x1b') {
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(STDIN_FILENO, &fds);
+        struct timeval tv = {0, 50000}; // 50ms
+        if (select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv) <= 0) {
+            input.control = CONTROL_ESC;
+            return input;
+        }
+
         char seq[2];
         if (read(STDIN_FILENO, &seq[0], 1) != 1) return input;
         if (read(STDIN_FILENO, &seq[1], 1) != 1) return input;

@@ -1,4 +1,3 @@
-#include <string.h>
 #include "buffer.h"
 #include "term.h"
 #include "util.h"
@@ -30,7 +29,7 @@ int main(void) {
 
     while (true) {
         Input input = term_get_input();
-        if (input.control == CONTROL_UP)
+        if (input.control == CONTROL_ESC)
             break;
 
         if (input.control == CONTROL_NONE)
