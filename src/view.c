@@ -79,15 +79,15 @@ View *view_from(View *parent, usize x, usize y, usize w, usize h) {
     return v;
 }
 
-usize view_write_line(View *v, Cell *cells, usize count, usize line) {
+usize view_write_line(View *v, Cell *cells, usize x, usize y, usize count) {
     if (v == NULL || cells == NULL || v->buffer == NULL || count == 0)
         return 0;
 
-    if (line >= v->height)
+    if (y >= v->height || x >= v->width)
         return 0;
 
-    usize write_count = min(v->width, count);
-    Cell *offset = v->buffer + (line * v->line_wrap_amount);
+    usize write_count = min(min(v->width, count), v->width - x);
+    Cell *offset = v->buffer + x + (y * v->line_wrap_amount);
     memcpy(offset, cells, write_count * sizeof(Cell));
     return write_count;
 }
@@ -167,7 +167,7 @@ usize view_clear(View *v, uint16_t color) {
             cells[i] = (Cell){.c = ' ', .fg = FG_NONE, .bg = color};
         }
 
-        view_write_line(v, cells, count, i);
+        view_write_line(v, cells, 0, i, count);
     }
 
     return v->width * v->height;

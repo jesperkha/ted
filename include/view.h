@@ -30,9 +30,9 @@ bool view_set_size(View *v, usize x, usize y, usize w, usize h);
 // buffer in cells is written to size if not null.
 Cell *view_get_line_buffer(usize *size);
 
-// Write count cells to a line in v. Will at most write the number of cells
-// equal to the view width. Returns number of cells written.
-usize view_write_line(View *v, Cell *cells, usize count, usize line);
+// Write count cells to a line y in v at offset x. Will at most write the number
+// of cells equal to the view width-x. Returns number of cells written.
+usize view_write_line(View *v, Cell *cells, usize x, usize y, usize count);
 
 // Get the cell at x,y. Returns NULL if out of bounds.
 Cell *view_cell_at(View *v, usize x, usize y);
