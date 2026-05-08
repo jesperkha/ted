@@ -3,16 +3,6 @@
 #include "util.h"
 #include "view.h"
 
-// TODO: move to new editor module
-void draw_view(View *v, byte *buffer) {
-    RenderView rv = view_get_render_view(v);
-    for (usize i = 0; i < rv.size; i++) {
-        buffer[i] = rv.cells[i].c;
-    }
-
-    term_write(STRING(buffer, rv.size));
-}
-
 int main(void) {
     Size size = term_get_size();
     if (size.width == 0)
@@ -45,7 +35,8 @@ int main(void) {
         }
 
         buffer_render(b, child);
-        draw_view(view, buffer);
+        usize count = view_render(view, buffer, MAX_BUFFER);
+        term_write(STRING(buffer, count));
         term_set_cursor_pos(0, 0);
     }
 

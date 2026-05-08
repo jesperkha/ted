@@ -62,6 +62,11 @@ Size view_size(View *v) {
     return SIZE(v->width, v->height);
 }
 
-RenderView view_get_render_view(View *v) {
-    return (RenderView){.cells = v->buffer, .size = v->width * v->height};
+usize view_render(View *v, byte *buffer, usize max_size) {
+    usize count = min(max_size, v->width * v->height);
+    for (usize i = 0; i < count; i++) {
+        buffer[i] = v->buffer[i].c;
+    }
+
+    return count;
 }

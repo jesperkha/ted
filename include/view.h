@@ -26,12 +26,5 @@ usize view_write_line(View *v, Cell *cells, usize count, usize line);
 // Get the size of v.
 Size view_size(View *v);
 
-// RenderView is a type representing the necessary components of a View
-// needed to be rendered to the screen.
-typedef struct RenderView {
-    Cell *cells;
-    usize size;
-} RenderView;
-
-// Get the RenderView from v. This is used to actually draw its contents.
-RenderView view_get_render_view(View *v);
+// Render v to a buffer with a maximum byte length. Returns number of bytes written.
+usize view_render(View *v, byte *buffer, usize max_size);
