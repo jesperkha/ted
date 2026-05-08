@@ -140,7 +140,7 @@ int buffer_render(Buffer *b, View *view) {
             cells[i] = (Cell){.c = line.text[i], .fg = FG_WHITE, .bg = BG_BLUE};
         }
 
-        sum_cells += view_write_line(view, cells, 10, i, count);
+        sum_cells += view_write_line(view, cells, 0, i, count);
     }
 
     // Show cursor position with inverted colors
