@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "buffer.h"
+#include "color.h"
 #include "util.h"
 #include "view.h"
 
@@ -132,7 +133,7 @@ int buffer_render(Buffer *b, View *view) {
         Cell *cells = line_draw_buffer;
 
         for (usize i = 0; i < count; i++) {
-            cells[i] = (Cell){.c = line.text[i]};
+            cells[i] = (Cell){.c = line.text[i], .fg = FG_WHITE, .bg = BG_BLACK};
         }
 
         sum_cells += view_write_line(view, cells, count, i);

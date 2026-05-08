@@ -1,4 +1,5 @@
 #include "view.h"
+#include "color.h"
 #include "util.h"
 #include <string.h>
 
@@ -23,6 +24,8 @@ View *view_create(usize width, usize height) {
 
     // Initialize clear buffer
     for (usize i = 0; i < width * height; i++) {
+        v->buffer[i].bg = BG_BLACK;
+        v->buffer[i].fg = FG_WHITE;
         v->buffer[i].c = ' ';
     }
 
@@ -63,10 +66,30 @@ Size view_size(View *v) {
 }
 
 usize view_render(View *v, byte *buffer, usize max_size) {
-    usize count = min(max_size, v->width * v->height);
-    for (usize i = 0; i < count; i++) {
-        buffer[i] = v->buffer[i].c;
+    usize cell_size = 5 + 5 + 1; // Two colors and the character
+
+    // Number of bytes and cells to write
+    usize byte_count = min(max_size, v->width * v->height * cell_size);
+    usize cell_count = byte_count / cell_size;
+
+    usize n = 0; // Byte position
+    for (usize i = 0; i < cell_count; i++) {
+        Cell c = v->buffer[i];
+
+        memcpy(buffer+n, "\x1b[", 2);
+        n += 2;
+        buffer[n++] = c.bg >> 8;
+        buffer[n++] = c.bg & 0xff;
+        buffer[n++] = 'm';
+
+        memcpy(buffer+n, "\x1b[", 2);
+        n += 2;
+        buffer[n++] = c.fg >> 8;
+        buffer[n++] = c.fg & 0xff;
+        buffer[n++] = 'm';
+
+        buffer[n++] = c.c;
     }
 
-    return count;
+    return byte_count;
 }

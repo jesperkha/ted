@@ -14,7 +14,6 @@ int main(void) {
     byte buffer[MAX_BUFFER];
 
     View *view = view_create(size.width, size.height);
-    View *child = view_from(view, 10, 10, 10, 10);
     Buffer *b = buffer_create();
 
     while (true) {
@@ -34,7 +33,7 @@ int main(void) {
             cursor_move(b, 0, 1);
         }
 
-        buffer_render(b, child);
+        buffer_render(b, view);
         usize count = view_render(view, buffer, MAX_BUFFER);
         term_write(STRING(buffer, count));
         term_set_cursor_pos(0, 0);
