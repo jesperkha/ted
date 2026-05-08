@@ -3,6 +3,18 @@
 #include "util.h"
 #include <string.h>
 
+#define LINE_DRAW_BUFFER_SIZE 512
+
+// Global buffer used to draw a single line to before rendering to a view.
+Cell line_draw_buffer[LINE_DRAW_BUFFER_SIZE];
+
+Cell *view_get_line_buffer(usize *size) {
+    if (size != NULL) {
+        *size = LINE_DRAW_BUFFER_SIZE;
+    }
+    return line_draw_buffer;
+}
+
 struct View {
     // Parent view if any.
     View *parent;
@@ -146,10 +158,24 @@ usize view_clear(View *v, uint16_t color) {
     if (v == NULL)
         return 0;
 
-    usize count = v->width * v->height;
-    for (usize i = 0; i < count; i++) {
-        v->buffer[i] = (Cell){.c = ' ', .fg = FG_NONE, .bg = color};
+    for (usize i = 0; i < v->height; i++) {
+        usize size;
+        Cell *cells = view_get_line_buffer(&size);
+        usize count = min(size, v->width);
+
+        for (usize i = 0; i < count; i++) {
+            cells[i] = (Cell){.c = ' ', .fg = FG_NONE, .bg = color};
+        }
+
+        view_write_line(v, cells, count, i);
     }
 
-    return count;
+    return v->width * v->height;
+}
+
+Cell *view_cell_at(View *v, usize x, usize y) {
+    if (v == NULL || x >= v->width || y >= v->height)
+        return NULL;
+
+    return &v->buffer[x + (y * v->line_wrap_amount)];
 }

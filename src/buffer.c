@@ -10,9 +10,6 @@
 #define LINEBUF_DEFAULT_SIZE 128
 #define DEFAULT_LINE_LENGTH 32
 
-// Global buffer used to draw a single line to before rendering to a view.
-Cell line_draw_buffer[512];
-
 typedef struct LineBuffer {
     // Source text if any. May be ERROR_STRING for empty buffer.
     String source;
@@ -120,48 +117,37 @@ void buffer_destroy(Buffer *b) {
 }
 
 int buffer_render(Buffer *b, View *view) {
+    view_clear(view, BG_BLUE);
+
+    // Get a cell buffer to write to
+    usize buffer_size;
+    Cell *cells = view_get_line_buffer(&buffer_size);
+
     Size size = view_size(view);
     usize line_count = min(size.height, b->lines.count);
 
     usize sum_cells = 0;
 
-    usize cursor_col = b->cursor.col;
-    usize cursor_row = b->cursor.row;
-
     for (usize i = 0; i < line_count; i++) {
         usize buffer_line_number = i + b->line_offset;
         Line line = b->lines.lines[buffer_line_number];
 
-        usize line_length = min(line.length, size.width);
-        Cell *cells = line_draw_buffer;
+        // Number of cells to write
+        usize count = min(min(line.length, size.width), buffer_size);
 
         // Draw all characters in the line
-        for (usize i = 0; i < line_length; i++) {
+        for (usize i = 0; i < count; i++) {
             cells[i] = (Cell){.c = line.text[i], .fg = FG_WHITE, .bg = BG_BLUE};
         }
 
-        // Draw padding at the end of the line
-        for (usize i = line_length; i < size.width; i++) {
-            cells[i] = (Cell){.c = ' ', .fg = FG_WHITE, .bg = BG_BLUE};
-        }
-
-        // Show cursor position with inverted colors
-        if (cursor_row == i && cursor_col < size.width) {
-            cells[cursor_col].bg = BG_WHITE;
-            cells[cursor_col].fg = FG_BLUE;
-        }
-
-        sum_cells += view_write_line(view, cells, size.width, i);
+        sum_cells += view_write_line(view, cells, count, i);
     }
 
-    for (usize i = line_count; i < size.height; i++) {
-        Cell *cells = line_draw_buffer;
-
-        for (usize i = 0; i < size.width; i++) {
-            cells[i] = (Cell){.c = ' ', .fg = FG_WHITE, .bg = BG_BLUE};
-        }
-
-        sum_cells += view_write_line(view, cells, size.width, i);
+    // Show cursor position with inverted colors
+    Cell *cursor_cell = view_cell_at(view, b->cursor.col, b->cursor.row);
+    if (cursor_cell != NULL) {
+        cursor_cell->bg = BG_WHITE;
+        cursor_cell->fg = FG_BLUE;
     }
 
     return sum_cells;

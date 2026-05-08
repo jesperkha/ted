@@ -68,14 +68,17 @@ Input term_get_input(void) {
         case '\n': input.control = CONTROL_ENTER; break;
         case 127: input.control = CONTROL_BACKSPACE; break;
         case '\t': input.control = CONTROL_TAB; break;
-        default:
+        default: {
             if (c >= 1 && c <= 26) {
                 input.control = CONTROL_CTRL;
                 input.character = c + 'a' - 1;
-            } else {
+            } else if (c >= 32 && c <= 126) {
                 input.character = c;
+            } else {
+                input.character = '?';
             }
             break;
+        }
     }
 
     return input;

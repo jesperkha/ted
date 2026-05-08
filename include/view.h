@@ -26,9 +26,16 @@ bool view_resize(View *v, int dx, int dy, int dw, int dh);
 // Sets the position and and size of the view. Returns true on success.
 bool view_set_size(View *v, usize x, usize y, usize w, usize h);
 
+// Get a buffer to render to before writing line to a view. The size of the
+// buffer in cells is written to size if not null.
+Cell *view_get_line_buffer(usize *size);
+
 // Write count cells to a line in v. Will at most write the number of cells
 // equal to the view width. Returns number of cells written.
 usize view_write_line(View *v, Cell *cells, usize count, usize line);
+
+// Get the cell at x,y. Returns NULL if out of bounds.
+Cell *view_cell_at(View *v, usize x, usize y);
 
 // Get the size of v.
 Size view_size(View *v);
