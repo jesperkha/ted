@@ -1,12 +1,17 @@
 #include "view.h"
+#include "term.h"
 #include "color.h"
 #include "util.h"
 #include <string.h>
 
 #define LINE_DRAW_BUFFER_SIZE 512
+#define RENDER_BUFFER_SIZE (1024 * 1024)
 
 // Global buffer used to draw a single line to before rendering to a view.
 Cell line_draw_buffer[LINE_DRAW_BUFFER_SIZE];
+
+// Internal buffer used to render content to terminal window.
+byte render_buffer[RENDER_BUFFER_SIZE];
 
 Cell *view_get_line_buffer(usize *size) {
     if (size != NULL) {
@@ -25,26 +30,34 @@ struct View {
     usize line_wrap_amount;
 };
 
-View *view_create(usize width, usize height) {
+View *view_create_root(void) {
+    term_new_buffer();
+
+    Size size = term_get_size();
+    if (size.width == 0)
+        PANIC("failed to get terminal size");
+
+    usize cell_count = size.width * size.height;
+
     View *v = malloc(sizeof(View));
     v->parent = NULL;
-    v->buffer = malloc(sizeof(Cell) * width * height);
+    v->buffer = malloc(sizeof(Cell) * cell_count);
     if (v->buffer == NULL)
         PANIC("failed to allocate view buffer");
 
     // TODO: view destroy
 
     // Initialize clear buffer
-    for (usize i = 0; i < width * height; i++) {
+    for (usize i = 0; i < cell_count; i++) {
         v->buffer[i].bg = BG_NONE;
         v->buffer[i].fg = FG_WHITE;
         v->buffer[i].c = ' ';
     }
 
     v->x = v->y = 0;
-    v->width = width;
-    v->height = height;
-    v->line_wrap_amount = width;
+    v->width = size.width;
+    v->height = size.height;
+    v->line_wrap_amount = size.width;
     return v;
 }
 
@@ -98,38 +111,6 @@ Size view_size(View *v) {
     return SIZE(v->width, v->height);
 }
 
-usize view_render(View *v, byte *buffer, usize max_size) {
-    if (v == NULL)
-        return 0;
-
-    usize cell_size = 5 + 5 + 1; // Two colors and the character
-
-    // Number of bytes and cells to write
-    usize byte_count = min(max_size, v->width * v->height * cell_size);
-    usize cell_count = byte_count / cell_size;
-
-    usize n = 0; // Byte position
-    for (usize i = 0; i < cell_count; i++) {
-        Cell c = v->buffer[i];
-
-        memcpy(buffer+n, "\x1b[", 2);
-        n += 2;
-        buffer[n++] = c.bg >> 8;
-        buffer[n++] = c.bg & 0xff;
-        buffer[n++] = 'm';
-
-        memcpy(buffer+n, "\x1b[", 2);
-        n += 2;
-        buffer[n++] = c.fg >> 8;
-        buffer[n++] = c.fg & 0xff;
-        buffer[n++] = 'm';
-
-        buffer[n++] = c.c;
-    }
-
-    return byte_count;
-}
-
 bool view_resize(View *v, int dx, int dy, int dw, int dh) {
     if (v == NULL || v->parent == NULL)
         return false;
@@ -178,4 +159,76 @@ Cell *view_cell_at(View *v, usize x, usize y) {
         return NULL;
 
     return &v->buffer[x + (y * v->line_wrap_amount)];
+}
+
+void view_destroy_root(View *v) {
+    if (v == NULL || v->parent != NULL)
+        return;
+
+    term_restore_buffer();
+    free(v->buffer);
+    free(v);
+}
+
+View *view_get_root(View *v) {
+    if (v == NULL)
+        return v;
+
+    while (v->parent != NULL)
+        v = v->parent;
+
+    return v;
+}
+
+usize view_write_string(View *v, String s, usize x, usize y, uint16_t bg, uint16_t fg) {
+    Cell *cells = view_get_line_buffer(NULL);
+
+    for (usize j = 0; j < s.length; j++) {
+        cells[j] = (Cell){.c = s.s[j], .bg = bg, .fg = fg};
+    }
+
+    return view_write_line(v, cells, x, y, s.length);
+}
+
+static usize write_to_buffer(View *v, byte *buffer, usize max_size) {
+    if (v == NULL)
+        return 0;
+
+    usize cell_size = 5 + 5 + 1; // Two colors and the character
+
+    // Number of bytes and cells to write
+    usize byte_count = min(max_size, v->width * v->height * cell_size);
+    usize cell_count = byte_count / cell_size;
+
+    usize n = 0; // Byte position
+    for (usize i = 0; i < cell_count; i++) {
+        Cell c = v->buffer[i];
+
+        memcpy(buffer+n, "\x1b[", 2);
+        n += 2;
+        buffer[n++] = c.bg >> 8;
+        buffer[n++] = c.bg & 0xff;
+        buffer[n++] = 'm';
+
+        memcpy(buffer+n, "\x1b[", 2);
+        n += 2;
+        buffer[n++] = c.fg >> 8;
+        buffer[n++] = c.fg & 0xff;
+        buffer[n++] = 'm';
+
+        buffer[n++] = c.c;
+    }
+
+    return byte_count;
+}
+
+usize view_render(View *v) {
+    View *root = view_get_root(v);
+    if (root == NULL)
+        return 0;
+
+    usize written = write_to_buffer(root, render_buffer, RENDER_BUFFER_SIZE);
+    term_write(STRING(render_buffer, written));
+    term_set_cursor_pos(0, 0);
+    return written;
 }

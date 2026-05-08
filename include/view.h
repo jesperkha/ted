@@ -1,5 +1,6 @@
 #pragma once
 
+#include "color.h"
 #include "util.h"
 #include <stdint.h>
 
@@ -14,7 +15,13 @@ typedef struct Cell {
 typedef struct View View;
 
 // Create a new root view. Initialize empty Cell buffer.
-View *view_create(usize width, usize height);
+View *view_create_root(void);
+
+// Free root view. Does nothing if v has a parent.
+void view_destroy_root(View *v);
+
+// Get root view of v.
+View *view_get_root(View *v);
 
 // Create a view into parent with the given dimensions.
 View *view_from(View *parent, usize x, usize y, usize w, usize h);
@@ -34,15 +41,18 @@ Cell *view_get_line_buffer(usize *size);
 // of cells equal to the view width-x. Returns number of cells written.
 usize view_write_line(View *v, Cell *cells, usize x, usize y, usize count);
 
+// Write string at given position with given background and foreground color;
+usize view_write_string(View *v, String s, usize x, usize y, Color bg, Color fg);
+
 // Get the cell at x,y. Returns NULL if out of bounds.
 Cell *view_cell_at(View *v, usize x, usize y);
 
 // Get the size of v.
 Size view_size(View *v);
 
-// Render v to a buffer with a maximum byte length. Returns number of bytes written.
-usize view_render(View *v, byte *buffer, usize max_size);
+// Get root view of v and render to the screen. Returns number of bytes written.
+usize view_render(View *v);
 
 // Fill the entire view with the given background color.
 // Returns number of cells written.
-usize view_clear(View *v, uint16_t color);
+usize view_clear(View *v, Color color);

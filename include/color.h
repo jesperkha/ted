@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 
-#define _C(a, b) ((uint16_t)((a) << 8 | (b)))
+typedef uint16_t Color;
+
+#define _C(a, b) ((Color)((a) << 8 | (b)))
 
 #define FG_NONE    _C('3', '9')
 #define FG_BLACK   _C('3', '0')

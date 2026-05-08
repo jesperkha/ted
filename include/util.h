@@ -42,6 +42,14 @@ typedef struct String {
    bool err;
 } String;
 
+// StringArray is a sized array of String.
+typedef struct StringArray {
+    String *ss;
+    usize length;
+} StringArray;
+
+#define EMPTY_STRING_ARRAY ((StringArray){.length = 0, .ss = NULL})
+
 #define ERROR_STRING ((String){.s = NULL, .length = 0, .err = true})
 #define STRING(ptr, len) ((String){.s = (char *)ptr, .length = len, .err = false})
 
