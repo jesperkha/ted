@@ -2,6 +2,7 @@ CompileFlags:
   Add:
     - -xc
     - -I../include
+    - -I../
     - -Wall
     - -Wextra
     - -Wpedantic

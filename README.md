@@ -1,4 +1,6 @@
-# Ted (Tiny Editor)
+# View
+
+Single header library for drawing sutff to the terminal with maximum flexibility.
 
 ## Build
 
@@ -6,4 +8,3 @@
 # Outputs to bin/
 make
 ```
-

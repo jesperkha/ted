@@ -5,10 +5,10 @@ ifeq ($(OS), Windows_NT)
 	TARGET := $(TARGET).exe
 endif
 
-FLAGS = -Wall -Wpedantic -std=c99 -Iinclude
+FLAGS = -Wall -Wpedantic -std=c99 -I.
 RELEASE_FLAGS = -O3
 BINDIR = bin
-SRC = src/*.c
+SRC = test/*.c
 
 all: $(TARGET)
 
